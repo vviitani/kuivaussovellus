@@ -1,0 +1,1 @@
+{"_lahde": "Siilojen fyysinen sijainti: rivit ylhäältä alas, sarakkeet 1..N. 'tyhjat' = ruudut ilman siiloa, 'erilliset' = ruudukon ulkopuolella näytettävät.", "rivit": ["D", "C", "B", "A"], "sarakkeet": 6, "tyhjat": {"B2": "porras"}, "erilliset": ["PS1", "PS2"]}

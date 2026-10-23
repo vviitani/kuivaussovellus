@@ -1,0 +1,17 @@
+{
+ "_ohje": "Oletus-hl-painot kg/hl per viljalaji. Kapasiteetti kg = tilavuus_m3 * 10 * hl-paino. Muokkaa ja aja tools/build_data.py.",
+ "oletus": 65,
+ "painot": {
+  "Vehnä": 80,
+  "Kevätvehnä": 80,
+  "Syysvehnä": 80,
+  "Ruis": 73,
+  "Ohra": 65,
+  "Mallasohra": 70,
+  "Kaura": 55,
+  "Rapsi": 65,
+  "Rypsi": 65,
+  "Herne": 80,
+  "Härkäpapu": 78
+ }
+}
