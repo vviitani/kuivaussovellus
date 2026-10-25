@@ -96,7 +96,7 @@ function varastot(){head('Varastot',true);const db=S.db();
   return `<div class="scell card2" data-siilo="${s.id}"><b>${s.id}</b><span class="sub">${b.kg>0?esc(lyh(b.viljalaji))+' '+b.satovuosi:'tyhjä'}</span><span class="kg">${b.kg>0?fmt(b.kg):''}</span><span class="sub">${b.kg>0?(p!=null?p+' %':'kap. ?'):m3t(s)}${b.lajit.length>1?' ⚠':''}</span>${barH(p)}</div>`});
  const tot={};db.tapahtumat.forEach(t=>{const k=t.viljalaji+' '+t.satovuosi;tot[k]=(tot[k]||0)+t.maara_kg});
  V.innerHTML=`<div class="lbl">Yhteensä</div><div class="status">${Object.keys(tot).length?Object.entries(tot).map(([k,v])=>esc(k)+': <b>'+fmt(v)+' kg</b>').join('<br>'):'Ei varastotapahtumia'}</div>
- ${cards}<p class="sub">Täyttöaste on ohjeellinen (oletus-hl-paino kg/hl viljalajin mukaan: ${Object.entries(KDATA.hl.painot).map(([k,v])=>k+' '+v).join(', ')}; muu ${KDATA.hl.oletus}) – ei estä kirjausta. Ylhäällä D-rivi, alhaalla A.</p><div class="lbl">Tapahtumat</div>
+ ${cards}<p class="sub">Täyttöaste on ohjeellinen.</p><div class="lbl">Tapahtumat</div>
  <table><tr><th>Aika</th><th>Siilo</th><th>Laji</th><th>kg</th></tr>${db.tapahtumat.slice().reverse().slice(0,30).map(t=>`<tr><td>${aika(t.aika)}</td><td>${t.siilo}</td><td>${esc(t.viljalaji)}</td><td>${t.maara_kg>0?'+':''}${fmt(t.maara_kg)}</td></tr>`).join('')}</table><br>
  <button class="btn r" id="kumoa" ${S.undoLabel()?'':'disabled'}>↶ Kumoa viimeisin${S.undoLabel()?': '+esc(S.undoLabel()):''}</button>`;
  $('#kumoa').onclick=()=>{if(confirm('Kumotaanko: '+S.undoLabel()+'?')){S.kumoa();varastot()}}}
