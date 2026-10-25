@@ -32,3 +32,4 @@ input[type=text]{width:100%;font-size:20px;padding:12px;background:#111;color:#f
 .scell.sel{border-color:#2f2;background:#063}.scell.sel::before{content:""}.scell.dis{opacity:.3;border-style:dashed}
 .card2{border-color:#555;background:#0d0d0d}.card2 .bar{height:8px;margin:3px 2px 0}
 .sgrid2 .scell{min-height:72px}.sgrid2 .scell b{font-size:22px}.sgrid2 .scell .sub{font-size:14px}
+button.card2{cursor:pointer}.scell .era{color:#ffd400}

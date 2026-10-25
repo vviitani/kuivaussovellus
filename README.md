@@ -27,14 +27,27 @@ Muutosten jälkeen: `python3 tools/build_data.py`.
 - **Kuorma tuli**: lohkonapit (viimeisimmät ylhäällä), yksi napautus.
 - **Täytä kuivuri**: puskurin saman viljalajin kuormat esivalittu, eri viljalaji estetty; märkämassa numpadilla; lähtökosteus 0,5 %-yks. askelin (arvio/mitattu); kuivaus- ja poistolämpö (0,1 °C) esitäytetty edellisestä saman viljalajin erästä. Uuden erän voi täyttää, vaikka edellinen on vielä kesken.
 - **Tyhjennä**: erävalinta (oletus vanhin), loppukosteus 0,1 %-yks., siilot fyysisenä ruudukkona, massa numpadilla, "Siilo täynnä – jatka seuraavaan" ja "Erä valmis" (näyttää hävikin).
-- **Varastot**: siilokortit ruudukkona (viljalaji, satovuosi, kg, täyttöaste), yhteenveto, tapahtumat, kumoa viimeisin.
+- **Varastot**: siilokortit ruudukkona (laji, satovuosi, kg, täyttöaste, eränumero), yhteenveto, tapahtumat, kumoa viimeisin. Siilon napautus avaa siilon tiedot (`#siilo/D1`).
+- **Siilon tiedot**: laji, satovuosi, saldo, ohjeellinen täyttöaste, lohkot (jäljitetään saapumisista erän kautta ja siirroista lähdesiilon kautta; vain nykyinen sisältö – lista nollautuu kun saldo käy nollassa), esinäyte-eränumero ja muistiinpano (tallennettavat), esinäyte-ryhmän yhteenveto (siilot joilla sama eränumero + yhteismassa), toiminnot ja siilon tapahtumat.
+- **Myynti / lähtö** (`#myynti/D1`): siilo → massa → valinnainen selite. Ylimyynti estetty.
+- **Siilosiirto** (`#siirto/D1`): lähde → kohde → massa. Kohteen pitää olla tyhjä tai samaa lajia.
+- **Korjaa saldo** (`#korjaus/D1`): anna oikea saldo, sovellus näyttää erotuksen; syy pakollinen.
 - Jokaisen tallennuksen jälkeen kuittaus + Kumoa. **⚙ Vienti & asetukset**: CSV-vienti ja synkan URL.
 
 ## Tietomalli
 - **kuormat**: id, aika, lohko, viljalaji, kasvi, lajike, satovuosi (korjuupäivästä), era_id (tyhjä = puskurissa). Ei massaa.
-- **erat**: id, viljalaji, satovuosi, lohkot, tayttoaika, markamassa_kg, lahtokosteus(+tapa), kuivauslampo, poistolampo, loppukosteus(+tapa), tila (kuivaus/valmis), valmis_aika, siirrot_kg, havikki_kg, havikki_pct. Vain yksi viljalaji per erä (estetty UI:ssa ja tietotasossa).
+- **erat**: id, viljalaji, satovuosi, lohkot, tayttoaika, markamassa_kg, lahtokosteus(+tapa), kuivauslampo, poistolampo, loppukosteus(+tapa), tila (kuivaus/valmis), valmis_aika, siirrot_kg, havikki_kg, havikki_pct. Vain yksi laji per erä (estetty UI:ssa ja tietotasossa).
 - **siirrot**: id, era_id, siilo, massa_kg, aika (useita per erä).
-- **tapahtumat**: id, aika, tyyppi (saapuminen/lahto/korjaus), siilo, viljalaji, satovuosi, maara_kg (±), era_id, siirto_id, selite. Jokaisesta siirrosta syntyy saapuminen.
+- **tapahtumat**: id, aika, tyyppi, siilo, viljalaji, satovuosi, maara_kg (±), era_id, siirto_id, selite. Tyypit:
+  - `saapuminen` (+) kuivurista siiloon; `siirto_id` viittaa kuivurisiirtoon.
+  - `lahto` (−) myynti tai muu lähtö.
+  - `siirto` siilosta toiseen: kaksi riviä (− lähde, + kohde) samalla `siirto_id`:llä (`SS-…`).
+  - `korjaus` (±) erotus oikeaan saldoon; syy selitteessä.
+- **siiloMeta** (vain paikallisesti): `{siilo: {eraNumero, muistiinpano}}`. Tyhjenee automaattisesti kun siilon saldo menee nollaan. Siirrossa tiedot kopioituvat kohteeseen; jos kohteella on eri tiedot, käyttäjä valitsee kumman tiedot jäävät.
+
+**Laji**: vehnä erotellaan kasvin mukaan (Kevätvehnä / Syysvehnä, näytössä Kev.vehnä / Syysv.), muut viljalajin mukaan. Kuorman `viljalaji`-kenttään tallentuu tämä laji, joten kevät- ja syysvehnä eivät sekoitu erässä eivätkä siilossa.
+
+Kaikki kirjaukset (myös siirto kokonaisuutena ja tietojen tallennus) voi kumota.
 - Kuivaus- ja puhdistushävikki = märkämassa − siirtojen summa (tallennetaan erälle).
 
 Data tallennetaan selaimen localStorageen; varmuuskopioi CSV-viennillä tai Sheets-synkalla.
@@ -48,11 +61,11 @@ Katso `backend/OHJE.md`. Synkka on valinnainen; ilman URL:ia sovellus toimii vai
 ## Testaus
 ```
 cd app && python3 -m http.server 8765
-cd tests && npm i && npx playwright install chromium && node e2e.mjs
+cd tests && npm i && npx playwright install chromium && node e2e.mjs && node varasto.mjs
 ```
-Testi ajaa mobiilikoossa koko kulun (kuormat → täyttö → tyhjennys kahteen siiloon → saldot ja hävikki), viljalajieston, useat avoimet erät, kapasiteetin ylityksen, offline-tilan ja CSV-viennin. Kuvakaappaukset tallentuvat `screenshots/`-kansioon.
+Testi ajaa mobiilikoossa koko kulun (kuormat → täyttö → tyhjennys kahteen siiloon → saldot ja hävikki), viljalajieston, useat avoimet erät, kapasiteetin ylityksen, offline-tilan ja CSV-viennin. `varasto.mjs` testaa kevät-/syysvehnäeston, siilon tiedot, esinäyte-ryhmän, myynnin, siirron (tietojen siirto ja valinta), korjauksen ja kumoamisen. Kuvakaappaukset tallentuvat `screenshots/`-kansioon.
 
 ## Avoimet kohdat
-- Lähtöjen (myynnit) ja korjausten näkymät.
+- Myyntitilitysten automaattinen tuonti.
 - Kytkentä kirjanpidollisiin varastoihin ja vienti viljelysuunnitteluohjelmaan.
 - Satovuoden käsittely vuodenvaihteen yli.
