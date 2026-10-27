@@ -154,4 +154,4 @@ const R={'#koti':koti,'#kuorma':kuorma,'#tayta':tayta,'#tyhjenna':tyhjenna,'#var
 const RP={'#siilo':siilo,'#myynti':myynti,'#siirto':siirtoV,'#korjaus':korjaus};
 function route(){$('#back').onclick=()=>go('#koti');const [h,a]=location.hash.split('/');if(RP[h])RP[h](decodeURIComponent(a||''));else (R[location.hash]||koti)();scrollTo(0,0);net()}
 addEventListener('hashchange',route);route();
-if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had)location.reload()});navigator.serviceWorker.register('sw.js')}
+if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had)location.reload()});navigator.serviceWorker.register('sw.js').then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update()})})}

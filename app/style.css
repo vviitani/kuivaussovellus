@@ -2,7 +2,7 @@
 header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;background:#111;border-bottom:2px solid #333;padding:6px 10px;min-height:60px}
 h1{font-size:24px;margin:0;flex:1}.hdr{font-size:40px;background:none;border:0;color:#ffd400;width:52px;height:52px}
 #net{font-size:15px;padding:4px 8px;border-radius:8px}.on{background:#0a4}.off{background:#c00}
-main{padding:12px;padding-bottom:80px}
+main{padding:12px;padding-bottom:56px}
 .btn{display:block;width:100%;min-height:72px;font-size:24px;font-weight:700;border-radius:14px;border:3px solid #fff;background:#1a1a1a;color:#fff;margin:0 0 12px;padding:10px}
 .btn:active{filter:brightness(1.6)}.btn.big{min-height:110px;font-size:30px}
 .btn.y{background:#ffd400;color:#000;border-color:#ffd400}.btn.g{background:#0b8a2c;border-color:#2f2}.btn.b{background:#0b4fa8;border-color:#5af}.btn.r{background:#8a0b0b;border-color:#f55}
@@ -21,8 +21,8 @@ main{padding:12px;padding-bottom:80px}
 .bar i.hi{background:#fa0}.bar i.over{background:#f33}
 table{width:100%;border-collapse:collapse;font-size:16px}td,th{border-bottom:1px solid #333;padding:6px 4px;text-align:left}
 .warn{color:#ff6;font-weight:700}.err{background:#600;border:2px solid #f55;padding:10px;border-radius:10px;margin:8px 0}
-#toast{position:fixed;left:0;right:0;bottom:0;z-index:9;background:#0b8a2c;padding:8px 10px;display:flex;align-items:center;gap:8px;border-top:2px solid #2f2}
-#toast .ok{font-size:28px}#toastMsg{flex:1;font-size:16px;font-weight:700}#toast .btn{width:auto;margin:0;min-height:40px;font-size:16px;padding:6px 12px}
+#toast{position:fixed;left:0;right:0;bottom:0;z-index:9;background:#0b8a2c;padding:6px 8px;display:flex;align-items:center;gap:6px;border-top:2px solid #2f2;min-height:0}
+#toast .ok{font-size:22px;line-height:1}#toastMsg{flex:1;font-size:15px;font-weight:700;line-height:1.2}#toast .btn{width:auto;margin:0;min-height:36px;height:36px;font-size:15px;padding:4px 10px;border-width:2px}
 input[type=text]{width:100%;font-size:20px;padding:12px;background:#111;color:#fff;border:2px solid #888;border-radius:10px}
 .sgrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
 .sgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
