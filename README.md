@@ -25,8 +25,8 @@ Muutosten jälkeen: `python3 tools/build_data.py`.
 ## Näkymät
 - **Koti**: Kuorma tuli / Täytä kuivuri / Tyhjennä / Varastot + tilarivi (puskuri, kuivurissa olevat erät).
 - **Kuorma tuli**: lohkonapit (viimeisimmät ylhäällä), yksi napautus.
-- **Täytä kuivuri**: puskurin saman viljalajin kuormat esivalittu, eri viljalaji estetty; märkämassa numpadilla; lähtökosteus 0,5 %-yks. askelin (arvio/mitattu); kuivaus- ja poistolämpö (0,1 °C) esitäytetty edellisestä saman viljalajin erästä. Uuden erän voi täyttää, vaikka edellinen on vielä kesken.
-- **Tyhjennä**: erävalinta (oletus vanhin), loppukosteus 0,1 %-yks., siilot fyysisenä ruudukkona, massa numpadilla, "Siilo täynnä – jatka seuraavaan" ja "Erä valmis" (näyttää hävikin).
+- **Täytä kuivuri**: puskurin saman viljalajin kuormat esivalittu, eri viljalaji estetty; märkämassa numpadilla; lähtökosteus 0,5 %-yks. askelin (arvio/mitattu). Uuden erän voi täyttää, vaikka edellinen on vielä kesken.
+- **Tyhjennä**: erävalinta (oletus vanhin), kuivaus- ja poistolämpö (esitäytetty edellisestä saman lajin erästä), loppukosteus 0,1 %-yks., siilot fyysisenä ruudukkona, massa numpadilla, "Siilo täynnä – jatka seuraavaan" ja "Erä valmis" (näyttää hävikin).
 - **Varastot**: siilokortit ruudukkona (laji, satovuosi, kg, täyttöaste, eränumero), yhteenveto, tapahtumat, kumoa viimeisin. Siilon napautus avaa siilon tiedot (`#siilo/D1`).
 - **Siilon tiedot**: laji, satovuosi, saldo, ohjeellinen täyttöaste, lohkot (jäljitetään saapumisista erän kautta ja siirroista lähdesiilon kautta; vain nykyinen sisältö – lista nollautuu kun saldo käy nollassa), esinäyte-eränumero ja muistiinpano (tallennettavat), esinäyte-ryhmän yhteenveto (siilot joilla sama eränumero + yhteismassa), toiminnot ja siilon tapahtumat.
 - **Myynti / lähtö** (`#myynti/D1`): siilo → massa → valinnainen selite. Ylimyynti estetty.

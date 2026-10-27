@@ -59,37 +59,40 @@ function kuorma(){head('Kuorma tuli',true);const y=new Date().getFullYear();
 
 function tayta(){head('Täytä kuivuri',true);const p=S.puskuri();if(!p.length){V.innerHTML='<div class="status">Puskuri on tyhjä.</div>';return}
  let vl=p[0].viljalaji;let sel=new Set(p.filter(k=>k.viljalaji===vl).map(k=>k.id));
- const ed=S.edellinenEra(vl)||{};const f={markamassa_kg:0,lahtokosteus:ed.lahtokosteus||20,lahtokosteus_tapa:'arvio',kuivauslampo:ed.kuivauslampo||70,poistolampo:ed.poistolampo||40};
+ const ed=S.edellinenEra(vl)||{};const f={markamassa_kg:0,lahtokosteus:ed.lahtokosteus||20,lahtokosteus_tapa:'arvio'};
  V.innerHTML=`<div class="lbl">Kuormat puskurista</div><div id="ks"></div><div class="lbl">Märkämassa (vaaka)</div><div id="np">${NP}</div>
  <div class="lbl">Lähtökosteus %</div><div id="lk">${STEP}</div><div id="lkt">${TOG}</div>
- <div class="lbl">Kuivauslämpö °C</div><div id="kl">${STEP}</div><div class="lbl">Poistolämpö °C</div><div id="pl">${STEP}</div>
- <p class="sub" id="edinfo">${ed.id?'Lämmöt ja kosteus esitäytetty edellisestä '+esc(vl)+'-erästä':'Oletusarvot – ei aiempaa '+esc(vl)+'-erää'}</p>
+ <p class="sub" id="edinfo">${ed.id?'Lähtökosteus esitäytetty edellisestä '+esc(lyh(vl))+'-erästä':'Oletusarvot – ei aiempaa '+esc(lyh(vl))+'-erää'}. Kuivaus- ja poistolämpö kirjataan tyhjennyksessä.</p>
  <button class="btn big g" id="tall">✔ Tallenna täyttö</button>`;
  const drawK=()=>{$('#ks').innerHTML=p.map(k=>{const dis=k.viljalaji!==vl;return `<button class="btn ${sel.has(k.id)?'sel':''} ${dis?'dis':''}" data-kuorma="${k.id}" ${dis?'disabled':''}>${esc(k.lohko)}<span class="sub">${esc(lyh(k.viljalaji))} · ${aika(k.aika)}${dis?' · eri viljalaji':''}</span></button>`}).join('');
   $('#ks').querySelectorAll('[data-kuorma]').forEach(b=>b.onclick=()=>{const id=b.dataset.kuorma;sel.has(id)?sel.delete(id):sel.add(id);drawK()})};drawK();
  numpad($('#np'),0,v=>f.markamassa_kg=v);
  stepper($('#lk'),f.lahtokosteus,0.5,v=>fk(v.toFixed(1))+' %',v=>f.lahtokosteus=v);toggle($('#lkt'),'arvio',v=>f.lahtokosteus_tapa=v);
- stepper($('#kl'),f.kuivauslampo,1,v=>v+' °C',v=>f.kuivauslampo=v);stepper($('#pl'),f.poistolampo,0.1,v=>fk(v.toFixed(1))+' °C',v=>f.poistolampo=v);
  $('#tall').onclick=()=>{try{const e=S.luoEra([...sel],f);toast('Erä täytetty: '+lyh(e.viljalaji)+' '+fmt(e.markamassa_kg)+' kg');go('#koti')}catch(e){err(e)}}}
 
 function tyhjenna(){head('Tyhjennä',true);const es=S.db().erat.filter(e=>e.tila==='kuivaus');if(!es.length){V.innerHTML='<div class="status">Kuivurissa ei ole erää.</div>';return}
- const e=es.find(x=>x.id===valittuEra)||es[0];valittuEra=e.id;const ed=S.db().erat.filter(x=>x.viljalaji===e.viljalaji&&x.loppukosteus!=='').pop();
- const lk={arvo:e.loppukosteus!==''?e.loppukosteus:(ed?ed.loppukosteus:14),tapa:e.loppukosteus_tapa||'mitattu'};let siilo='',kg=0;
- const y=S.siirrotYht(e.id);
- V.innerHTML=(es.length>1?'<div class="lbl">Valitse erä</div><div class="grid" id="erat">'+es.map((x,i)=>`<button class="btn ${x.id===e.id?'sel':''}" data-e="${x.id}">${esc(x.viljalaji)}<span class="sub">Erä ${S.db().erat.indexOf(x)+1} · ${aika(x.tayttoaika)}</span></button>`).join('')+'</div>':'')+`<div class="status">Erä ${S.db().erat.indexOf(e)+1}: <b>${esc(e.viljalaji)}</b> ${e.satovuosi} · märkä ${fmt(e.markamassa_kg)} kg<br>Siirretty: <b>${fmt(y)} kg</b>${S.db().siirrot.filter(s=>s.era_id===e.id).map(s=>' · '+s.siilo+' '+fmt(s.massa_kg)).join('')}</div>
+ const e=es.find(x=>x.id===valittuEra)||es[0];valittuEra=e.id;const ed=S.db().erat.filter(x=>x.viljalaji===e.viljalaji&&x.tila==='valmis').pop();
+ const lk={arvo:e.loppukosteus!==''?e.loppukosteus:(ed?ed.loppukosteus:14),tapa:e.loppukosteus_tapa||'mitattu'};
+ const lampo={kuivaus:e.kuivauslampo!==''&&e.kuivauslampo!=null?Number(e.kuivauslampo):(ed&&ed.kuivauslampo!==''&&ed.kuivauslampo!=null?Number(ed.kuivauslampo):70),
+  poisto:e.poistolampo!==''&&e.poistolampo!=null?Number(e.poistolampo):(ed&&ed.poistolampo!==''&&ed.poistolampo!=null?Number(ed.poistolampo):40)};
+ let siilo='',kg=0;const y=S.siirrotYht(e.id);
+ V.innerHTML=(es.length>1?'<div class="lbl">Valitse erä</div><div class="grid" id="erat">'+es.map((x,i)=>`<button class="btn ${x.id===e.id?'sel':''}" data-e="${x.id}">${esc(lyh(x.viljalaji))}<span class="sub">Erä ${S.db().erat.indexOf(x)+1} · ${aika(x.tayttoaika)}</span></button>`).join('')+'</div>':'')+`<div class="status">Erä ${S.db().erat.indexOf(e)+1}: <b>${esc(lyh(e.viljalaji))}</b> ${e.satovuosi} · märkä ${fmt(e.markamassa_kg)} kg<br>Siirretty: <b>${fmt(y)} kg</b>${S.db().siirrot.filter(s=>s.era_id===e.id).map(s=>' · '+s.siilo+' '+fmt(s.massa_kg)).join('')}</div>
+ <div class="lbl">Kuivauslämpö °C</div><div id="kl">${STEP}</div><div class="lbl">Poistolämpö °C</div><div id="pl">${STEP}</div>
  <div class="lbl">Loppukosteus %</div><div id="lk">${STEP}</div><div id="lkt">${TOG}</div>
  <div class="lbl">Siilo</div><div id="sl"></div><div class="lbl">Siiloon mennyt massa (vaaka)</div><div id="np">${NP}</div>
  <button class="btn big y" id="jatka">Siilo täynnä – jatka seuraavaan</button><button class="btn big g" id="valmis">✔ Erä valmis</button>`;
  V.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{valittuEra=b.dataset.e;tyhjenna()});
+ stepper($('#kl'),lampo.kuivaus,1,v=>v+' °C',v=>lampo.kuivaus=v);stepper($('#pl'),lampo.poisto,0.1,v=>fk(v.toFixed(1))+' °C',v=>lampo.poisto=v);
  stepper($('#lk'),Number(lk.arvo),0.1,v=>fk(v.toFixed(1))+' %',v=>lk.arvo=v);toggle($('#lkt'),lk.tapa,v=>lk.tapa=v);
  const drawS=()=>{$('#sl').innerHTML=siiloGrid(s=>{const b=S.siiloSaldo(s.id);const dis=b.kg>0&&b.viljalaji!==e.viljalaji;const p=pctOf(s,b.kg,b.viljalaji);
   return `<button class="scell ${siilo===s.id?'sel':''} ${dis?'dis':''}" data-s="${s.id}" ${dis?'disabled':''}><b>${s.id}</b><span class="sub">${b.kg>0?esc(lyh(b.viljalaji)):'tyhjä'}${p!=null?' '+p+'%':''}</span><span class="sub">${b.kg>0?'':m3t(s)}</span></button>`});
   V.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{siilo=b.dataset.s;drawS()})};drawS();
  numpad($('#np'),0,v=>kg=v);
- const siirra=()=>{if(!siilo)throw new Error('Valitse siilo');S.siirto(e.id,siilo,kg,lk)};
+ const tiedot=()=>({...lk,kuivauslampo:lampo.kuivaus,poistolampo:lampo.poisto});
+ const siirra=()=>{if(!siilo)throw new Error('Valitse siilo');S.siirto(e.id,siilo,kg,tiedot())};
  $('#jatka').onclick=()=>{try{siirra();toast(fmt(kg)+' kg → '+siilo);tyhjenna()}catch(x){err(x)}};
- $('#valmis').onclick=()=>{try{if(kg>0||siilo)siirra();if(!S.siirrotYht(e.id))throw new Error('Ei yhtään siirtoa');const r=S.eraValmis(e.id,lk);valittuEra='';
-  toast('Erä valmis');V.innerHTML=`<div class="status" id="tulos"><b>Erä valmis</b><br>Märkämassa: ${fmt(r.markamassa_kg)} kg<br>Siiloihin: ${fmt(r.siirrot_kg)} kg<br>Kuivaus- ja puhdistushävikki: <b class="warn">${fmt(r.havikki_kg)} kg (${fk(r.havikki_pct)} %)</b></div><button class="btn big" onclick="go('#koti')">Kotiin</button>`}catch(x){err(x)}}}
+ $('#valmis').onclick=()=>{try{if(kg>0||siilo)siirra();if(!S.siirrotYht(e.id))throw new Error('Ei yhtään siirtoa');const r=S.eraValmis(e.id,tiedot());valittuEra='';
+  toast('Erä valmis');V.innerHTML=`<div class="status" id="tulos"><b>Erä valmis</b><br>Märkämassa: ${fmt(r.markamassa_kg)} kg<br>Siiloihin: ${fmt(r.siirrot_kg)} kg<br>Kuivaus ${fk(r.kuivauslampo)} °C · poisto ${fk(r.poistolampo)} °C<br>Kuivaus- ja puhdistushävikki: <b class="warn">${fmt(r.havikki_kg)} kg (${fk(r.havikki_pct)} %)</b></div><button class="btn big" onclick="go('#koti')">Kotiin</button>`}catch(x){err(x)}}}
 
 function varastot(){head('Varastot',true);const db=S.db();
  const cards=siiloGrid(s=>{const b=S.siiloSaldo(s.id);const p=pctOf(s,b.kg,b.viljalaji);const k=kapOf(s,b.viljalaji);

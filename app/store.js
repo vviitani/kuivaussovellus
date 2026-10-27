@@ -32,7 +32,7 @@ const S={
   snapshot('Täyttö'); const vuodet=ks.map(k=>k.satovuosi);
   const e={id:id('E'),viljalaji:ks[0].viljalaji,satovuosi:Math.max(...vuodet),lohkot:[...new Set(ks.map(k=>k.lohko))].join('; '),
    tayttoaika:now(),markamassa_kg:f.markamassa_kg,lahtokosteus:f.lahtokosteus,lahtokosteus_tapa:f.lahtokosteus_tapa,
-   kuivauslampo:f.kuivauslampo,poistolampo:f.poistolampo,loppukosteus:'',loppukosteus_tapa:'',tila:'kuivaus',valmis_aika:'',siirrot_kg:0,havikki_kg:'',havikki_pct:''};
+   kuivauslampo:'',poistolampo:'',loppukosteus:'',loppukosteus_tapa:'',tila:'kuivaus',valmis_aika:'',siirrot_kg:0,havikki_kg:'',havikki_pct:''};
   db.erat.push(e); ks.forEach(k=>{k.era_id=e.id;q('update','kuormat',k)}); q('insert','erat',e); save(); return e;
  },
  siiloSaldo(sid){
@@ -45,7 +45,7 @@ const S={
   if(!(kg>0)) throw new Error('Anna massa');
   const s=S.siiloSaldo(siilo); if(s.kg>0&&s.viljalaji&&s.viljalaji!==e.viljalaji) throw new Error('Siilossa '+siilo+' on '+s.viljalaji);
   snapshot('Siirto '+siilo);
-  if(loppu){e.loppukosteus=loppu.arvo;e.loppukosteus_tapa=loppu.tapa}
+  if(loppu){e.loppukosteus=loppu.arvo;e.loppukosteus_tapa=loppu.tapa;if(loppu.kuivauslampo!=null)e.kuivauslampo=loppu.kuivauslampo;if(loppu.poistolampo!=null)e.poistolampo=loppu.poistolampo}
   const r={id:id('S'),era_id:e.id,siilo,massa_kg:kg,aika:now()}; db.siirrot.push(r);
   const t={id:id('T'),aika:r.aika,tyyppi:'saapuminen',siilo,viljalaji:e.viljalaji,satovuosi:e.satovuosi,maara_kg:kg,era_id:e.id,siirto_id:r.id,selite:'Kuivurista erä '+e.id};
   db.tapahtumat.push(t); e.siirrot_kg=S.siirrotYht(e.id);
@@ -55,7 +55,7 @@ const S={
  eraValmis(eraId,loppu){
   const e=db.erat.find(x=>x.id===eraId); if(!e) throw new Error('Erää ei löydy');
   snapshot('Erä valmis');
-  if(loppu){e.loppukosteus=loppu.arvo;e.loppukosteus_tapa=loppu.tapa}
+  if(loppu){e.loppukosteus=loppu.arvo;e.loppukosteus_tapa=loppu.tapa;if(loppu.kuivauslampo!=null)e.kuivauslampo=loppu.kuivauslampo;if(loppu.poistolampo!=null)e.poistolampo=loppu.poistolampo}
   e.siirrot_kg=S.siirrotYht(e.id); e.havikki_kg=e.markamassa_kg-e.siirrot_kg;
   e.havikki_pct=Math.round(e.havikki_kg/e.markamassa_kg*1000)/10; e.tila='valmis'; e.valmis_aika=now();
   q('update','erat',e);save();return e;
