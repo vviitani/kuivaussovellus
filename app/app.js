@@ -65,8 +65,8 @@ function tayta(){head('Täytä kuivuri',true);const p=S.puskuri();if(!p.length){
  <div class="lbl">Kuivauslämpö °C</div><div id="kl">${STEP}</div><div class="lbl">Poistolämpö °C</div><div id="pl">${STEP}</div>
  <p class="sub" id="edinfo">${ed.id?'Lämmöt ja kosteus esitäytetty edellisestä '+esc(vl)+'-erästä':'Oletusarvot – ei aiempaa '+esc(vl)+'-erää'}</p>
  <button class="btn big g" id="tall">✔ Tallenna täyttö</button>`;
- const drawK=()=>{$('#ks').innerHTML=p.map(k=>{const dis=k.viljalaji!==vl;return `<button class="btn ${sel.has(k.id)?'sel':''} ${dis?'dis':''}" data-k="${k.id}" ${dis?'disabled':''}>${esc(k.lohko)}<span class="sub">${esc(k.viljalaji)} · ${aika(k.aika)}${dis?' · eri viljalaji':''}</span></button>`}).join('');
-  V.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{sel.has(b.dataset.k)?sel.delete(b.dataset.k):sel.add(b.dataset.k);drawK()})};drawK();
+ const drawK=()=>{$('#ks').innerHTML=p.map(k=>{const dis=k.viljalaji!==vl;return `<button class="btn ${sel.has(k.id)?'sel':''} ${dis?'dis':''}" data-kuorma="${k.id}" ${dis?'disabled':''}>${esc(k.lohko)}<span class="sub">${esc(lyh(k.viljalaji))} · ${aika(k.aika)}${dis?' · eri viljalaji':''}</span></button>`}).join('');
+  $('#ks').querySelectorAll('[data-kuorma]').forEach(b=>b.onclick=()=>{const id=b.dataset.kuorma;sel.has(id)?sel.delete(id):sel.add(id);drawK()})};drawK();
  numpad($('#np'),0,v=>f.markamassa_kg=v);
  stepper($('#lk'),f.lahtokosteus,0.5,v=>fk(v.toFixed(1))+' %',v=>f.lahtokosteus=v);toggle($('#lkt'),'arvio',v=>f.lahtokosteus_tapa=v);
  stepper($('#kl'),f.kuivauslampo,1,v=>v+' °C',v=>f.kuivauslampo=v);stepper($('#pl'),f.poistolampo,0.1,v=>fk(v.toFixed(1))+' °C',v=>f.poistolampo=v);
