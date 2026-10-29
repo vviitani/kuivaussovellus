@@ -117,7 +117,35 @@ const S={
   const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body});
   const j=await r.json(); if(j.ok){db.jono=[];save();return true} throw new Error(j.error||'sync');
  },
- nollaaKaikki(){const url=db.asetukset&&db.asetukset.syncUrl||'';db=empty();db.asetukset.syncUrl=url;save()}
+ nollaaKaikki(){const url=db.asetukset&&db.asetukset.syncUrl||'';db=empty();db.asetukset.syncUrl=url;save()},
+ tuoAlkusaldot(rows,{korvaa=false}={}){
+  rows=rows||(typeof ALKUSALDOT!=='undefined'?ALKUSALDOT:[]);
+  if(!rows.length) throw new Error('Ei alkusaldoja');
+  if(!korvaa && (db.tapahtumat.length||db.erat.length||db.kuormat.length))
+   throw new Error('Sovelluksessa on jo tietoja. Tyhjennä ensin tai tuo korvaavasti.');
+  const url=db.asetukset&&db.asetukset.syncUrl||'';
+  if(korvaa){db=empty();db.asetukset.syncUrl=url}
+  snapshot('Alkusaldot');
+  const aika='2026-09-11T12:00:00.000Z';
+  let n=0;
+  rows.forEach(r=>{
+   if(!(r.kg>0)||!r.siilo||!r.viljalaji) return;
+   const e={id:id('E'),viljalaji:r.viljalaji,satovuosi:r.satovuosi||2026,lohkot:r.lohkot||'',
+    tayttoaika:aika,markamassa_kg:r.kg,lahtokosteus:'',lahtokosteus_tapa:'',
+    kuivauslampo:'',poistolampo:'',loppukosteus:'',loppukosteus_tapa:'',
+    tila:'valmis',valmis_aika:aika,siirrot_kg:r.kg,havikki_kg:0,havikki_pct:0};
+   db.erat.push(e); q('insert','erat',e);
+   const s={id:id('S'),era_id:e.id,siilo:r.siilo,massa_kg:r.kg,aika};
+   db.siirrot.push(s); q('insert','siirrot',s);
+   const tt={id:id('T'),aika,tyyppi:'saapuminen',siilo:r.siilo,viljalaji:r.viljalaji,satovuosi:e.satovuosi,
+    maara_kg:r.kg,era_id:e.id,siirto_id:s.id,selite:'Alkusaldo '+(r.lahde||'11.9.2026')+(r.lajike?' · '+r.lajike:'')};
+   db.tapahtumat.push(tt); q('insert','tapahtumat',tt);
+   if(r.muistiinpano) S._setMeta(r.siilo,{eraNumero:'',muistiinpano:r.muistiinpano});
+   n++;
+  });
+  save(); return n;
+ }
 };
+
 window.S=S;
 })();
