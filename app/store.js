@@ -117,7 +117,7 @@ const S={
   const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body});
   const j=await r.json(); if(j.ok){db.jono=[];save();return true} throw new Error(j.error||'sync');
  },
- _reset(){db=empty();save()}
+ nollaaKaikki(){const url=db.asetukset&&db.asetukset.syncUrl||'';db=empty();db.asetukset.syncUrl=url;save()}
 };
 window.S=S;
 })();

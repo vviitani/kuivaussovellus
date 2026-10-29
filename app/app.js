@@ -145,14 +145,16 @@ function korjaus(id){head('Korjaa saldo',true);back2(id);let sl=id||'',kg=0;
 function asetukset(){head('Vienti & asetukset',true);
  V.innerHTML=`<div class="lbl">CSV-vienti</div>${S.tables.map(t=>`<button class="btn" data-t="${t}">⬇ ${t}.csv (${S.db()[t].length})</button>`).join('')}<button class="btn y" id="all">⬇ Kaikki taulut</button>
  <div class="lbl">Sheets-synkka (Apps Script URL)</div><input type="text" id="url" placeholder="https://script.google.com/macros/s/.../exec" value="${esc(S.asetus('syncUrl'))}"><br><br>
- <button class="btn b" id="su">Tallenna ja synkkaa</button><p class="sub">Jonossa ${S.db().jono.length} muutosta.</p>`;
+ <button class="btn b" id="su">Tallenna ja synkkaa</button><p class="sub">Jonossa ${S.db().jono.length} muutosta.</p>
+ <div class="lbl">Tiedot</div><button class="btn r" id="nollaa">🗑 Nollaa kaikki testitiedot</button><p class="sub">Poistaa kuormat, erät, siirrot, tapahtumat ja siilotiedot tältä laitteelta. Synkka-URL säilyy.</p>`;
  const dl=t=>{const c=S.csv(t)||'\ufeff';const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:'text/csv'}));a.download=t+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click()};
  V.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>dl(b.dataset.t));$('#all').onclick=()=>S.tables.forEach((t,i)=>setTimeout(()=>dl(t),i*400));
- $('#su').onclick=async()=>{S.asetus('syncUrl',$('#url').value.trim());try{const ok=await S.sync();alert(ok?'Synkattu':'Ei synkattavaa / offline / URL puuttuu')}catch(e){err(e)}net()}}
+ $('#su').onclick=async()=>{S.asetus('syncUrl',$('#url').value.trim());try{const ok=await S.sync();alert(ok?'Synkattu':'Ei synkattavaa / offline / URL puuttuu')}catch(e){err(e)}net()};
+ $('#nollaa').onclick=()=>{if(!confirm('Nollataanko KAIKKI kuivaus- ja varastotiedot tältä laitteelta?'))return;if(!confirm('Varmista: testitiedot poistetaan pysyvästi. Jatka?'))return;S.nollaaKaikki();toast('Tiedot nollattu');go('#koti')}}
 
 const R={'#koti':koti,'#kuorma':kuorma,'#tayta':tayta,'#tyhjenna':tyhjenna,'#varastot':varastot,'#asetukset':asetukset};
 const RP={'#siilo':siilo,'#myynti':myynti,'#siirto':siirtoV,'#korjaus':korjaus};
 function route(){$('#back').onclick=()=>go('#koti');const [h,a]=location.hash.split('/');if(RP[h])RP[h](decodeURIComponent(a||''));else (R[location.hash]||koti)();scrollTo(0,0);net()}
 addEventListener('hashchange',route);route();
-if('caches' in window){caches.keys().then(ks=>Promise.all(ks.filter(k=>k!=='kuivaus-v13').map(k=>caches.delete(k))))}
+if('caches' in window){caches.keys().then(ks=>Promise.all(ks.filter(k=>k!=='kuivaus-v14').map(k=>caches.delete(k))))}
 if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had)location.reload()});navigator.serviceWorker.register('sw.js').then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update()})})}
