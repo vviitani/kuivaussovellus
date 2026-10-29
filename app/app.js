@@ -37,6 +37,8 @@ const kapOf=(s,v)=>s.m3&&v?s.m3*10*hlOf(v):null;
 const pctOf=(s,kg,v)=>{const k=kapOf(s,v);return k&&kg>0?Math.round(kg/k*100):null};
 const m3t=s=>s.m3?fk(s.m3)+' m³':'m³ ?';
 function barH(p){return p!=null?`<div class="bar"><i class="${p>100?'over':p>85?'hi':''}" style="width:${Math.min(100,p)}%"></i></div>`:''}
+const VARI={'Kevätvehnä':'#f5c400','Syysvehnä':'#ff7a1a','Ohra':'#3fa9ff','Mallasohra':'#00d0d0','Kaura':'#c48aff','Herne':'#3ddc4a','Rypsi':'#ff4fa3','Rapsi':'#ff3b3b'};const vari=v=>VARI[v]||'#bbb';
+const lyhV=v=>({'Kevätvehnä':'kv','Syysvehnä':'sv'}[v]||v);
 const lyh=v=>({'Kevätvehnä':'Kev.vehnä','Syysvehnä':'Syysv.'}[v]||v);
 let valittuEra='';
 function koti(){head('Kuivaus',false);const db=S.db();const p=S.puskuri();const k=db.erat.filter(e=>e.tila==='kuivaus');
@@ -96,7 +98,7 @@ function tyhjenna(){head('Tyhjennä',true);const es=S.db().erat.filter(e=>e.tila
 
 function varastot(){head('Varastot',true);const db=S.db();
  const cards=siiloGrid(s=>{const b=S.siiloSaldo(s.id);const p=pctOf(s,b.kg,b.viljalaji);const k=kapOf(s,b.viljalaji);
-  const m=S.meta(s.id);return `<button class="scell card2" data-siilo="${s.id}" onclick="go('#siilo/${s.id}')"><b>${s.id}</b><span class="sub">${b.kg>0?esc(lyh(b.viljalaji))+' '+b.satovuosi:'tyhjä'}</span><span class="kg">${b.kg>0?fmt(b.kg):''}</span><span class="sub">${b.kg>0?(p!=null?p+' %':'kap. ?'):m3t(s)}${b.lajit.length>1?' ⚠':''}</span>${m.eraNumero?'<span class="sub era">'+esc(m.eraNumero)+'</span>':''}${barH(p)}</button>`});
+  const m=S.meta(s.id);return `<button class="scell card2" data-siilo="${s.id}" onclick="go('#siilo/${s.id}')"${b.kg>0?` style="--c:${vari(b.viljalaji)}"`:''}><b>${s.id}</b><span class="sub">${b.kg>0?'<span class="chip">'+esc(lyhV(b.viljalaji))+'</span> '+b.satovuosi:'tyhjä'}</span><span class="kg">${b.kg>0?fmt(b.kg):''}</span><span class="sub">${b.kg>0?(p!=null?'':'kap. ?'):m3t(s)}${b.lajit.length>1?' ⚠':''}</span>${m.eraNumero?'<span class="sub era">'+esc(m.eraNumero)+'</span>':''}${barH(p)}</button>`});
  const tot={};db.tapahtumat.forEach(t=>{const k=lyh(t.viljalaji)+' '+t.satovuosi;tot[k]=(tot[k]||0)+t.maara_kg});
  V.innerHTML=`<div class="lbl">Yhteensä</div><div class="status">${Object.keys(tot).length?Object.entries(tot).map(([k,v])=>esc(k)+': <b>'+fmt(v)+' kg</b>').join('<br>'):'Ei varastotapahtumia'}</div>
  ${cards}<p class="sub">Täyttöaste on ohjeellinen. Napauta siiloa: tiedot, myynti, siirto, korjaus.</p><div class="lbl">Tapahtumat</div>
@@ -147,14 +149,11 @@ function asetukset(){head('Vienti & asetukset',true);
  V.innerHTML=`<div class="lbl">CSV-vienti</div>${S.tables.map(t=>`<button class="btn" data-t="${t}">⬇ ${t}.csv (${S.db()[t].length})</button>`).join('')}<button class="btn y" id="all">⬇ Kaikki taulut</button>
  <div class="lbl">Sheets-synkka (Apps Script URL)</div><input type="text" id="url" placeholder="https://script.google.com/macros/s/.../exec" value="${esc(S.asetus('syncUrl'))}"><br><br>
  <button class="btn b" id="su">Tallenna ja synkkaa</button><p class="sub">Jonossa ${S.db().jono.length} muutosta.</p>
- <div class="lbl">Alkusaldot</div><button class="btn y" id="tuoalku">⬇ Tuo saldot (viljavarasto 11.9.2026)</button><p class="sub">Nykyiset siilosaldot lohkotietoineen Sheetistä. Käytä tyhjään sovellukseen.</p>`;
+`;
  const dl=t=>{const c=S.csv(t)||'\ufeff';const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:'text/csv'}));a.download=t+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click()};
  V.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>dl(b.dataset.t));$('#all').onclick=()=>S.tables.forEach((t,i)=>setTimeout(()=>dl(t),i*400));
  $('#su').onclick=async()=>{S.asetus('syncUrl',$('#url').value.trim());try{const ok=await S.sync();alert(ok?'Synkattu':'Ei synkattavaa / offline / URL puuttuu')}catch(e){err(e)}net()};
- $('#tuoalku').onclick=()=>{try{const onJo=S.db().tapahtumat.length||S.db().erat.length||S.db().kuormat.length;
-  if(onJo&&!confirm('Sovelluksessa on jo tietoja. Korvataanko ne Sheetin saldoilla?'))return;
-  if(!confirm('Tuodaanko 11.9.2026 saldot lohkotietoineen ('+(ALKUSALDOT||[]).length+' siiloa)?'))return;
-  const n=S.tuoAlkusaldot(ALKUSALDOT,{korvaa:!!onJo});toast('Tuotu '+n+' siilon alkusaldoa');go('#varastot')}catch(e){err(e)}}}
+}
 
 const R={'#koti':koti,'#kuorma':kuorma,'#tayta':tayta,'#tyhjenna':tyhjenna,'#varastot':varastot,'#asetukset':asetukset};
 const RP={'#siilo':siilo,'#myynti':myynti,'#siirto':siirtoV,'#korjaus':korjaus};

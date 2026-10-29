@@ -33,3 +33,5 @@ input[type=text]{width:100%;font-size:20px;padding:12px;background:#111;color:#f
 .card2{border-color:#555;background:#0d0d0d}.card2 .bar{height:8px;margin:3px 2px 0}
 .sgrid2 .scell{min-height:72px}.sgrid2 .scell b{font-size:22px}.sgrid2 .scell .sub{font-size:14px}
 button.card2{cursor:pointer}.scell .era{color:#ffd400}
+.card2[style*="--c"]{border-color:var(--c);border-left-width:6px}.card2[style*="--c"] .bar i{background:var(--c)}.card2[style*="--c"] .bar i.over{background:#f33}
+.chip{display:inline-block;background:var(--c,#555);color:#000;font-weight:700;border-radius:5px;padding:0 5px}
