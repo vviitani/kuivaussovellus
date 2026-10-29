@@ -30,7 +30,7 @@ const S={
   const vl=new Set(ks.map(k=>k.viljalaji)); if(vl.size>1) throw new Error('Erässä ei voi sekoittaa viljalajeja: '+[...vl].join(', '));
   if(!(f.markamassa_kg>0)) throw new Error('Anna märkämassa');
   snapshot('Täyttö'); const vuodet=ks.map(k=>k.satovuosi);
-  const e={id:id('E'),viljalaji:ks[0].viljalaji,satovuosi:Math.max(...vuodet),lohkot:[...new Set(ks.map(k=>k.lohko))].join('; '),
+  const e={id:id('E'),viljalaji:ks[0].viljalaji,satovuosi:Math.max(...vuodet),lohkot:[...new Set(ks.map(k=>k.lohko))].join('; '),lajike:[...new Set(ks.map(k=>k.lajike).filter(Boolean))].join('; '),
    tayttoaika:now(),markamassa_kg:f.markamassa_kg,lahtokosteus:f.lahtokosteus,lahtokosteus_tapa:f.lahtokosteus_tapa,
    kuivauslampo:'',poistolampo:'',loppukosteus:'',loppukosteus_tapa:'',tila:'kuivaus',valmis_aika:'',siirrot_kg:0,havikki_kg:'',havikki_pct:''};
   db.erat.push(e); ks.forEach(k=>{k.era_id=e.id;q('update','kuormat',k)}); q('insert','erat',e); save(); return e;
@@ -96,12 +96,17 @@ const S={
  ryhma(nro){if(!nro)return [];return Object.keys(db.siiloMeta).filter(k=>db.siiloMeta[k].eraNumero===nro).map(k=>({siilo:k,...S.siiloSaldo(k)}))},
  // Lohkot jäljitetään saapumisista (erä → lohkot) ja siirroista (lähdesiilon lohkot)
  // vain nykyinen sisältö: lohkot nollataan aina kun saldo käy nollassa
- siiloLohkot(sid,asti=Infinity,d=0){let out=new Set(),kg=0;if(d>10)return out;
+ siiloLohkot(sid,asti=Infinity,d=0,kentta='lohkot'){let out=new Set(),kg=0;if(d>10)return out;
   db.tapahtumat.forEach((t,i)=>{if(i>=asti||t.siilo!==sid)return;
-   if(t.maara_kg>0){if(t.era_id){const e=db.erat.find(x=>x.id===t.era_id);if(e&&e.lohkot)e.lohkot.split('; ').forEach(l=>out.add(l))}
-    else if(t.tyyppi==='siirto'){const j=db.tapahtumat.findIndex(x=>x.siirto_id===t.siirto_id&&x.maara_kg<0);if(j>=0)S.siiloLohkot(db.tapahtumat[j].siilo,j,d+1).forEach(l=>out.add(l))}}
+   if(t.maara_kg>0){if(t.era_id){const e=db.erat.find(x=>x.id===t.era_id);const v=e?(kentta==='lajike'?S.eraLajike(e):e.lohkot):'';if(v)v.split('; ').forEach(l=>out.add(l))}
+    else if(t.tyyppi==='siirto'){const j=db.tapahtumat.findIndex(x=>x.siirto_id===t.siirto_id&&x.maara_kg<0);if(j>=0)S.siiloLohkot(db.tapahtumat[j].siilo,j,d+1,kentta).forEach(l=>out.add(l))}}
    kg+=t.maara_kg;if(kg<=0)out=new Set()});
   return out},
+ siiloLajikkeet:sid=>S.siiloLohkot(sid,Infinity,0,'lajike'),
+ // Vanhat erät ilman lajike-kenttää: alkusaldon selitteestä tai kuormien lajikkeista
+ eraLajike(e){if(e.lajike)return e.lajike;
+  const t=db.tapahtumat.find(x=>x.era_id===e.id&&/^Alkusaldo .* · /.test(x.selite||''));if(t)return t.selite.split(' · ').slice(1).join(' · ');
+  return [...new Set(db.kuormat.filter(k=>k.era_id===e.id).map(k=>k.lajike).filter(Boolean))].join('; ')},
  edellinenEra(vl){return [...db.erat].reverse().find(e=>e.viljalaji===vl)},
  kumoa(){const s=db.undo.pop(); if(!s) return null; tables.forEach(t=>db[t]=s[t]);db.siiloMeta=s.siiloMeta||{}; q('restore','*',{label:s.label}); save(); return s.label},
  undoLabel:()=>db.undo.length?db.undo[db.undo.length-1].label:'',
@@ -130,7 +135,7 @@ const S={
   let n=0;
   rows.forEach(r=>{
    if(!(r.kg>0)||!r.siilo||!r.viljalaji) return;
-   const e={id:id('E'),viljalaji:r.viljalaji,satovuosi:r.satovuosi||2026,lohkot:r.lohkot||'',
+   const e={id:id('E'),viljalaji:r.viljalaji,satovuosi:r.satovuosi||2026,lohkot:r.lohkot||'',lajike:r.lajike||'',
     tayttoaika:aika,markamassa_kg:r.kg,lahtokosteus:'',lahtokosteus_tapa:'',
     kuivauslampo:'',poistolampo:'',loppukosteus:'',loppukosteus_tapa:'',
     tila:'valmis',valmis_aika:aika,siirrot_kg:r.kg,havikki_kg:0,havikki_pct:0};

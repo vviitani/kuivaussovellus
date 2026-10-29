@@ -107,9 +107,10 @@ function varastot(){head('Varastot',true);const db=S.db();
 const TYY={saapuminen:'saapuminen',lahto:'myynti',korjaus:'korjaus',siirto:'siirto'};
 const evRows=ts=>`<table><tr><th>Aika</th><th>Tyyppi</th><th>kg</th></tr>${ts.slice().reverse().slice(0,15).map(t=>`<tr><td>${aika(t.aika)}</td><td>${TYY[t.tyyppi]||t.tyyppi}${t.selite&&t.tyyppi!=='saapuminen'?'<span class="sub">'+esc(t.selite)+'</span>':''}</td><td>${t.maara_kg>0?'+':''}${fmt(t.maara_kg)}</td></tr>`).join('')}</table>`;
 function siilo(id){const s=KDATA.siilot.find(x=>x.id===id);if(!s)return go('#varastot');head('Siilo '+id,true);$('#back').onclick=()=>go('#varastot');
- const b=S.siiloSaldo(id),m=S.meta(id),p=pctOf(s,b.kg,b.viljalaji),ls=[...S.siiloLohkot(id)];
+ const b=S.siiloSaldo(id),m=S.meta(id),p=pctOf(s,b.kg,b.viljalaji),ls=[...S.siiloLohkot(id)],lj=[...S.siiloLajikkeet(id)];
  const ryh=()=>{const g=S.ryhma(m.eraNumero);return g.length?`<div class="status" id="ryhma">Esinäyte-erä <b>${esc(m.eraNumero)}</b>: ${g.map(x=>x.siilo+' '+fmt(x.kg)).join(', ')}<br>Yhteensä <b>${fmt(g.reduce((a,x)=>a+x.kg,0))} kg</b></div>`:''};
  V.innerHTML=`<div class="status" id="sinfo">${b.kg>0?`<b>${esc(lyh(b.viljalaji))}</b> ${b.satovuosi}<br>Saldo: <b>${fmt(b.kg)} kg</b>${p!=null?' · täyttö n. '+p+' %':''}`:'Tyhjä · '+m3t(s)}</div>
+ <div class="lbl">Lajike</div><div class="status" id="slajike">${lj.length?lj.map(esc).join('<br>'):'–'}</div>
  <div class="lbl">Lohkot</div><div class="status" id="slohkot">${ls.length?ls.map(esc).join('<br>'):'–'}</div>
  ${b.kg>0?`<div class="lbl">Esinäyte-eränumero</div><input type="text" id="eranro" placeholder="esim. E-14" value="${esc(m.eraNumero)}">
  <div class="lbl">Muistiinpano</div><input type="text" id="muist" placeholder="esim. siemeneksi" value="${esc(m.muistiinpano)}"><br><br>
